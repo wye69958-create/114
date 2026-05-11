@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智齡連結：樂齡學習參與人次分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --industrial-gold: #f39c12;
+            --industrial-dark: #1a1a1b;
+            --metal-grey: #2d3436;
+            --neon-blue: #00d2ff;
+        }
+
+        body {
+            background-color: var(--industrial-dark);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        /* 工業背景動畫 */
+        .bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(45, 52, 54, 0.5) 0%, rgba(26, 26, 27, 1) 100%),
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+        }
+
+        .gear {
+            position: absolute;
+            fill: rgba(243, 156, 18, 0.05);
+            animation: spin var(--speed) linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 掃描線效果 */
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(243, 156, 18, 0.05) 50%, rgba(0, 0, 0, 0) 100%);
+            opacity: 0.1;
+            position: fixed;
+            bottom: 100%;
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+
+        /* 工業風卡片 */
+        .industrial-card {
+            background: rgba(30, 30, 32, 0.85);
+            border: 2px solid var(--metal-grey);
+            border-left: 6px solid var(--industrial-gold);
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .industrial-card::before {
+            content: "PROJECT_ID: 882-SCLC";
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.65rem;
+            color: var(--industrial-gold);
+            opacity: 0.5;
+        }
+
+        /* 按鈕設計 */
+        .btn-industrial {
+            background: var(--industrial-gold);
+            color: #000;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 1rem 2rem;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-industrial:hover {
+            transform: scale(1.05);
+            background: #e67e22;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.6);
+        }
+
+        /* 數據進度條 */
+        .progress-container {
+            background: #111;
+            height: 8px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            background: var(--industrial-gold);
+            height: 100%;
+            width: 0%;
+            transition: width 2s ease-out;
+        }
+
+        .glitch {
+            text-shadow: 2px 0 var(--neon-blue), -2px 0 red;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas" id="gear-bg">
+        <!-- 齒輪 SVG 會由 JS 動態生成 -->
+    </div>
+    <div class="scanline"></div>
+
+    <div class="container mx-auto px-4 py-16 relative z-10">
+        <!-- 標題區 -->
+        <header class="mb-16 text-center md:text-left">
+            <div class="inline-block border-b-4 border-orange-500 mb-2">
+                <span class="text-sm font-mono text-orange-500 uppercase tracking-widest">Statistical Analysis v2.5</span>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-black mb-4 uppercase italic leading-tight">
+                智齡連結<br>
+                <span class="text-orange-500 glitch">樂齡學習數據</span>
+            </h1>
+            <p class="text-xl text-gray-400 max-w-2xl">
+                探究台灣樂齡學習中心活動參與人次之時空演變與課程偏好分析
+            </p>
+        </header>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- 專題介紹 -->
+            <div class="md:col-span-2 space-y-8">
+                <section class="industrial-card p-8">
+                    <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M13 14h-2V9h2v5zm0 4h-2v-2h2v2zM1 21h22L12 2 1 21z"/></svg>
+                        專題研究背景
+                    </h2>
+                    <p class="leading-relaxed mb-4">
+                        隨著台灣步入超高齡社會，高齡者的「終身學習」已不再是單純的消遣，而是維繫社會參與、延緩認知衰退的重要基石。本專題透過分析全國各區樂齡學習中心的年度參與人次數據，試圖找出影響長者出門參與活動的核心關鍵。
+                    </p>
+                    <p class="leading-relaxed">
+                        我們研究了包括「健康促進」、「數位工具」、「生活美學」及「志願服務」四大類課程。初步數據顯示，在後疫情時代，<strong>健康類課程</strong>的人次增長率達到了 142%，顯示出長者對於自我健康管理的急迫需求。
+                    </p>
+                </section>
+
+                <section class="industrial-card p-8">
+                    <h2 class="text-2xl font-bold mb-4">關鍵發現 (Key Metrics)</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between mb-1 text-sm font-mono">
+                                <span>健康促進類參與率</span>
+                                <span>85%</span>
+                            </div>
+                            <div class="progress-container"><div class="progress-bar" style="width: 85%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1 text-sm font-mono">
+                                <span>數位工具應用人次</span>
+                                <span>42%</span>
+                            </div>
+                            <div class="progress-container"><div class="progress-bar" style="width: 42%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1 text-sm font-mono">
+                                <span>城鄉參與差距 (GAP)</span>
+                                <span>61%</span>
+                            </div>
+                            <div class="progress-container"><div class="progress-bar" style="width: 61%"></div></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 控制台區域 -->
+            <div class="space-y-8">
+                <div class="industrial-card p-6 border-orange-500 bg-orange-500/5">
+                    <h3 class="text-lg font-bold mb-4 text-orange-500 uppercase tracking-tighter">系統執行端</h3>
+                    <p class="text-sm text-gray-400 mb-6">點擊下方按鈕啟動專案數據視覺化執行檔，此程式將運算 2020-2025 年間的所有變量關係。</p>
+                    
+                    <button class="btn-industrial w-full justify-center mb-4" onclick="handleLaunch()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 3l14 9-14 9V3z"/></svg>
+                        啟動分析執行檔
+                    </button>
+
+                    <div id="status-display" class="bg-black p-3 rounded font-mono text-xs text-green-500 h-32 overflow-y-auto border border-green-900/50">
+                        > 系統就緒...<br>
+                        > 待命模組: DataViz_v1.exe<br>
+                        > 核心溫度: 正常
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-20 py-8 border-t border-gray-800 text-center text-gray-600 text-xs font-mono uppercase tracking-widest">
+            &copy; 2026 Industrial Statistics Lab. All rights reserved. // NO_ACCESS_WITHOUT_CREDENTIALS
+        </footer>
+    </div>
+
+    <!-- 模擬彈出視窗 -->
+    <div id="modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
+        <div class="industrial-card max-w-lg w-full p-8 border-orange-500">
+            <h2 class="text-3xl font-black text-orange-500 mb-4">系統錯誤</h2>
+            <div class="font-mono text-sm mb-6">
+                [FATAL ERROR]: 無法存取本地執行路徑。<br>
+                [MESSAGE]: 這是靜態預覽網頁。在實際環境中，此按鈕將啟動 Python/C++ 數據分析引擎。
+            </div>
+            <button class="btn-industrial w-full" onclick="closeModal()">確認並返回</button>
+        </div>
+    </div>
+
+    <script>
+        // 動態生成背景齒輪
+        const bg = document.getElementById('gear-bg');
+        const gearPath = "M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.97 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.97 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z";
+
+        function createGear(size, top, left, speed, opacity) {
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 24 24");
+            svg.setAttribute("class", "gear");
+            svg.style.width = size + "px";
+            svg.style.height = size + "px";
+            svg.style.top = top + "%";
+            svg.style.left = left + "%";
+            svg.style.setProperty("--speed", speed + "s");
+            svg.style.opacity = opacity;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", gearPath);
+            svg.appendChild(path);
+            bg.appendChild(svg);
+        }
+
+        // 初始化背景齒輪
+        createGear(300, -10, -5, 40, 0.05);
+        createGear(200, 70, 85, 25, 0.03);
+        createGear(150, 40, 10, 15, 0.04);
+        createGear(400, 80, -10, 60, 0.02);
+
+        // 控制台邏輯
+        const statusDisplay = document.getElementById('status-display');
+        function log(msg) {
+            statusDisplay.innerHTML += `<br>> ${msg}`;
+            statusDisplay.scrollTop = statusDisplay.scrollHeight;
+        }
+
+        function handleLaunch() {
+            log("正在編譯數據矩陣...");
+            setTimeout(() => log("正在建立連線至 SCLC_DB..."), 500);
+            setTimeout(() => log("分析 2024 年度人次... [OK]"), 1200);
+            setTimeout(() => log("產生成果報告中..."), 1800);
+            setTimeout(() => {
+                document.getElementById('modal').classList.remove('hidden');
+            }, 2500);
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            log("執行暫停。等待使用者指令。");
+        }
+
+        // 滑鼠移動背景偏移 (視差效果)
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            const gears = document.querySelectorAll('.gear');
+            gears.forEach((gear, index) => {
+                const shift = (index + 1) * 10;
+                gear.style.transform = `translate(${x * shift}px, ${y * shift}px) rotate(calc(var(--rotation, 0deg)))`;
+            });
+        });
+    </script>
+</body>
+</html>.
